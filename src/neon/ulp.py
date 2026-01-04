@@ -2,8 +2,18 @@
 
 import math
 import struct
+from typing import cast
 
 from .exceptions import InvalidValueError
+
+__all__ = [
+    "of",
+    "diff",
+    "within",
+    "next",
+    "prev",
+    "add",
+]
 
 
 def of(x: float) -> float:
@@ -76,7 +86,7 @@ def diff(a: float, b: float) -> int:
     # Python's struct uses big-endian by default, we need to interpret as signed int
     def float_to_int_bits(f: float) -> int:
         # Pack as double (8 bytes), unpack as long long (signed 64-bit int)
-        bits = struct.unpack('>Q', struct.pack('>d', f))[0]
+        bits = cast(int, struct.unpack('>Q', struct.pack('>d', f))[0])
         # Convert to signed (two's complement for negative numbers)
         if bits >= 2**63:
             bits -= 2**64

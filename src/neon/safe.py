@@ -1,10 +1,22 @@
 """Safe arithmetic operations with edge case handling."""
 
 import math
-from typing import Optional, Sequence
+from typing import Optional, Sequence, cast
 
 from .compare import near_zero
 from ._validation import validate_non_empty
+
+__all__ = [
+    "div",
+    "div_or_zero",
+    "div_or_inf",
+    "mod",
+    "sqrt",
+    "log",
+    "pow",
+    "sum_exact",
+    "mean_exact",
+]
 
 
 def div(a: float, b: float, *, default: Optional[float] = None, zero_tol: float = 0.0) -> Optional[float]:
@@ -182,7 +194,7 @@ def pow(base: float, exp: float, *, default: Optional[float] = None) -> Optional
         1.0
     """
     try:
-        return base**exp
+        return cast(float, base**exp)
     except (ValueError, ZeroDivisionError):
         return default
 

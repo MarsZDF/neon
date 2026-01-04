@@ -3,6 +3,19 @@
 import math
 from typing import Sequence
 
+__all__ = [
+    "near",
+    "near_rel",
+    "near_abs",
+    "near_zero",
+    "is_integer",
+    "compare",
+    "less_or_near",
+    "greater_or_near",
+    "all_near",
+    "near_many",
+]
+
 
 def near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 1e-9) -> bool:
     """Check if two floats are approximately equal.

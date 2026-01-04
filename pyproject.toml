@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "elemental-neon"
-version = "0.1.0"
+version = "1.0.0"
 description = "Near-equality and tolerance arithmetic for floating-point numbers"
 readme = "README.md"
 license = "MIT"
@@ -26,7 +26,7 @@ keywords = [
     "equality",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",

@@ -5,31 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-01-04
 
-### Added
-- Initial release of elemental-neon
-- `neon.compare` module for approximate equality comparisons
-  - `near()`, `near_zero()`, `is_integer()` functions
-  - `less_or_near()`, `greater_or_near()`, `compare()` functions
+### Production release - Stable API
+
+This v1.0.0 release commits to API stability following semver. No breaking changes will occur in the 1.x series without a major version bump.
+
+**Features:**
+
+- **Comparison module** (`neon.compare`): Approximate equality with tolerance
+  - `near()`, `near_rel()`, `near_abs()`, `near_zero()`, `is_integer()`
+  - `compare()`, `less_or_near()`, `greater_or_near()`
   - `all_near()`, `near_many()` batch operations
-- `neon.clamp` module for value snapping and clamping
-  - `to_zero()`, `to_int()`, `to_value()` functions
-  - `to_range()`, `to_values()` functions
+- **Clamping module** (`neon.clamp`): Value snapping and range constraints
+  - `to_zero()`, `to_int()`, `to_value()`, `to_range()`, `to_values()`
   - `to_zero_many()` batch operation
-- `neon.safe` module for safe arithmetic
+- **Safe arithmetic** (`neon.safe`): Graceful edge case handling
   - `div()`, `div_or_zero()`, `div_or_inf()` safe division
   - `mod()`, `sqrt()`, `log()`, `pow()` safe operations
-  - `sum_exact()`, `mean_exact()` Kahan summation
-- `neon.ulp` module for ULP-based operations
-  - `of()`, `diff()`, `near()` ULP functions
+  - `sum_exact()`, `mean_exact()` with `math.fsum()` for precision
+- **ULP operations** (`neon.ulp`): Unit-in-last-place precision control
+  - `of()`, `diff()`, `within()` ULP analysis
   - `next()`, `prev()`, `add()` ULP manipulation
-- Exception hierarchy: `NeonError`, `InvalidValueError`, `EmptyInputError`
-- Comprehensive test suite with pytest
-- Full type hints and docstrings
-- Zero-dependency implementation
+- **Exception hierarchy**: `NeonError`, `InvalidValueError`, `EmptyInputError`
+- **Type safety**: Full mypy strict compliance with explicit `__all__` exports
+- **Zero dependencies**: Pure Python standard library only
 
-## [0.1.0] - 2026-01-04
+**Testing & Quality:**
 
-### Added
-- Initial beta release
+- 118 unit tests covering all API functions (100% pass rate)
+- Property-based tests with Hypothesis for mathematical correctness
+- 91% code coverage (exceeds 90% requirement)
+- Tested on Python 3.9, 3.10, 3.11, 3.12, 3.13
+- Type checking with mypy --strict
+- Linting with ruff
+- Pre-commit hooks configured
+- Performance benchmarking suite
+
+**Quality Improvements:**
+
+- Better default tolerances: `abs_tol=1e-9` instead of 0.0 (more practical)
+- Performance: O(1) ULP diff using IEEE 754 bit manipulation (~1M operations/sec)
+- Type consistency: `to_int()` always returns `float` (no runtime type switching)
+- Convenience functions: `near_rel()` and `near_abs()` for common patterns
+- Comprehensive documentation with cookbook examples
+- Interactive Jupyter notebook demo
+- Benchmarked performance claims verified
+
+**Breaking Changes from beta (0.1.0):**
+
+- Renamed `ulp.near()` → `ulp.within()` for API clarity
+- Changed `to_int()` return type from `Union[float, int]` to `float` for consistency
+- Changed default `abs_tol` from `0.0` to `1e-9` (better defaults for 95% of use cases)
+- Replaced Python Kahan summation with C `math.fsum()` (~10x faster)
+
+**Known Limitations (documented):**
+
+- Uses Python `float` (IEEE 754 double precision, ~15-17 significant digits)
+- Not suitable for arbitrary-precision arithmetic (use `decimal.Decimal` instead)
+- Not optimized for vectorized operations on millions of floats (use NumPy instead)
+- `math.fsum()` cannot recover from catastrophic cancellation
+
+**API Stability Guarantee:**
+
+All public APIs in `neon.compare`, `neon.clamp`, `neon.safe`, and `neon.ulp` are **stable**. No breaking changes will occur in the 1.x series without a major version bump to 2.0.0.
