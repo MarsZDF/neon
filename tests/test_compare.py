@@ -1,7 +1,5 @@
 """Tests for compare module."""
 
-import math
-import pytest
 
 from neon import compare
 

@@ -1,11 +1,11 @@
 """Property-based tests using Hypothesis."""
 
 import math
-from hypothesis import given, assume, strategies as st
-import pytest
 
-from neon import compare, ulp, clamp, safe
+from hypothesis import assume, given
+from hypothesis import strategies as st
 
+from neon import clamp, compare, safe, ulp
 
 # Strategy for finite floats (excluding NaN and inf)
 finite_floats = st.floats(

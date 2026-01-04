@@ -1,6 +1,5 @@
 """Tests for ULP module."""
 
-import math
 import pytest
 
 from neon import ulp

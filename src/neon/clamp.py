@@ -1,7 +1,7 @@
 """Clamping and snapping functions."""
 
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 from .compare import near, near_zero
 

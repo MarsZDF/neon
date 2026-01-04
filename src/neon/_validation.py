@@ -1,9 +1,9 @@
 """Internal validation utilities."""
 
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
-from .exceptions import InvalidValueError, EmptyInputError
+from .exceptions import EmptyInputError, InvalidValueError
 
 
 def validate_finite(x: float, name: str = "value") -> None:

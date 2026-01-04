@@ -1,7 +1,7 @@
 """Comparison functions for floating-point numbers."""
 
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 __all__ = [
     "near",

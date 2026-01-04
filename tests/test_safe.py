@@ -1,6 +1,7 @@
 """Tests for safe module."""
 
 import math
+
 import pytest
 
 from neon import safe

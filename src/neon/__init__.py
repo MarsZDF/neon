@@ -16,19 +16,21 @@ Example:
     True
 """
 
-from . import compare, clamp, safe, ulp
-from .exceptions import (
-    NeonError,
-    InvalidValueError,
-    EmptyInputError,
-)
+from . import clamp, compare, safe, ulp
+from .clamp import to_int, to_range, to_zero
 
 # Export most commonly used functions at top level for ergonomics
 # Users can do: from neon import near, to_zero, div
-from .compare import near, near_zero, is_integer
-from .clamp import to_zero, to_int, to_range
+from .compare import is_integer, near, near_zero
+from .exceptions import (
+    EmptyInputError,
+    InvalidValueError,
+    NeonError,
+)
 from .safe import div, sqrt, sum_exact
-from .ulp import of as ulp_of, diff as ulp_diff, within as ulp_within
+from .ulp import diff as ulp_diff
+from .ulp import of as ulp_of
+from .ulp import within as ulp_within
 
 __version__ = "1.0.0"
 

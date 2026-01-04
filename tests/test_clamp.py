@@ -1,7 +1,6 @@
 """Tests for clamp module."""
 
 import math
-import pytest
 
 from neon import clamp
 

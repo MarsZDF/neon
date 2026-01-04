@@ -1,10 +1,11 @@
 """Safe arithmetic operations with edge case handling."""
 
 import math
-from typing import Optional, Sequence, cast
+from collections.abc import Sequence
+from typing import Optional, cast
 
-from .compare import near_zero
 from ._validation import validate_non_empty
+from .compare import near_zero
 
 __all__ = [
     "div",
@@ -19,7 +20,9 @@ __all__ = [
 ]
 
 
-def div(a: float, b: float, *, default: Optional[float] = None, zero_tol: float = 0.0) -> Optional[float]:
+def div(
+    a: float, b: float, *, default: Optional[float] = None, zero_tol: float = 0.0
+) -> Optional[float]:
     """Safe division with configurable zero handling.
 
     Args:
@@ -145,7 +148,9 @@ def sqrt(x: float, *, default: Optional[float] = None) -> Optional[float]:
     return math.sqrt(x)
 
 
-def log(x: float, *, base: Optional[float] = None, default: Optional[float] = None) -> Optional[float]:
+def log(
+    x: float, *, base: Optional[float] = None, default: Optional[float] = None
+) -> Optional[float]:
     """Safe logarithm that handles non-positive inputs.
 
     Args:
