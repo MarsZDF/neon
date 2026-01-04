@@ -133,10 +133,8 @@ def within(a: float, b: float, *, max_ulps: int = 4) -> bool:
     if math.isinf(a) or math.isinf(b):
         return a == b
 
-    try:
-        return diff(a, b) <= max_ulps
-    except InvalidValueError:
-        return False
+    # Both values are finite at this point, diff() will not raise
+    return diff(a, b) <= max_ulps
 
 
 def next(x: float) -> float:

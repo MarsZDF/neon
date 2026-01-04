@@ -131,7 +131,7 @@ from neon import clamp
 clamp.to_zero(1e-15)           # → 0.0
 clamp.to_zero(0.1)             # → 0.1
 
-clamp.to_int(2.9999999999)     # → 3
+clamp.to_int(2.9999999999)     # → 3.0 (float, not int)
 clamp.to_int(2.5)              # → 2.5
 
 clamp.to_value(0.333333333, 1/3)  # → 0.3333333333333333 (exact 1/3)
