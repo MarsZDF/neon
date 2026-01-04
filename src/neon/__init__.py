@@ -23,6 +23,13 @@ from .exceptions import (
     EmptyInputError,
 )
 
+# Export most commonly used functions at top level for ergonomics
+# Users can do: from neon import near, to_zero, div
+from .compare import near, near_zero, is_integer
+from .clamp import to_zero, to_int, to_range
+from .safe import div, sqrt, sum_exact
+from .ulp import of as ulp_of, diff as ulp_diff, within as ulp_within
+
 __version__ = "1.0.0"
 
 __all__ = [
@@ -35,4 +42,17 @@ __all__ = [
     "NeonError",
     "InvalidValueError",
     "EmptyInputError",
+    # Most commonly used functions (ergonomic top-level exports)
+    "near",
+    "near_zero",
+    "is_integer",
+    "to_zero",
+    "to_int",
+    "to_range",
+    "div",
+    "sqrt",
+    "sum_exact",
+    "ulp_of",
+    "ulp_diff",
+    "ulp_within",
 ]

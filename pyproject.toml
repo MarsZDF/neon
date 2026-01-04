@@ -62,6 +62,7 @@ Issues = "https://github.com/MarsZDF/neon/issues"
 packages = ["src/neon"]
 
 [tool.pytest.ini_options]
+pythonpath = "src"
 testpaths = ["tests"]
 addopts = [
     "--cov=neon",

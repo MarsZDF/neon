@@ -176,7 +176,11 @@ def prev(x: float) -> float:
 
 
 def add(x: float, n: int) -> float:
-    """Move n ULPs from x.
+    """Move n ULPs from x using math.nextafter.
+
+    Note: This uses a loop of math.nextafter calls. While O(N), it is fast enough
+    for practical use cases (millions of iterations per second). A full O(1) bit
+    manipulation approach would require complex IEEE 754 sign-magnitude handling.
 
     Args:
         x: Starting value
@@ -196,10 +200,12 @@ def add(x: float, n: int) -> float:
     if n == 0:
         return x
 
+    if math.isnan(x) or math.isinf(x):
+        return x
+
+    # Use math.nextafter in a loop
+    result = x
     direction = math.inf if n > 0 else -math.inf
-    current = x
-
     for _ in range(abs(n)):
-        current = math.nextafter(current, direction)
-
-    return current
+        result = math.nextafter(result, direction)
+    return result

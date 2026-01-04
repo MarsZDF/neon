@@ -77,9 +77,9 @@ class TestUlpProperties:
         assume(not math.isinf(x))
         assert ulp.prev(ulp.next(x)) == x
 
-    @given(x=finite_floats, n=st.integers(min_value=-10, max_value=10))
+    @given(x=finite_floats, n=st.integers(min_value=-10_000, max_value=10_000))
     def test_add_inverse(self, x: float, n: int) -> None:
-        """add(add(x, n), -n) should equal x."""
+        """add(add(x, n), -n) should equal x for moderate ULP offsets."""
         assume(not math.isinf(x))
         result = ulp.add(ulp.add(x, n), -n)
         assert result == x
