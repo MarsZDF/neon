@@ -37,6 +37,37 @@ class TestNear:
         assert compare.near(0.0, -0.0) is True
 
 
+class TestNearRel:
+    """Tests for near_rel() function."""
+
+    def test_relative_comparison(self) -> None:
+        # 0.1% tolerance
+        assert compare.near_rel(1000.0, 1001.0, tol=1e-2) is True
+        assert compare.near_rel(1000.0, 1010.0, tol=1e-2) is True
+        assert compare.near_rel(1000.0, 1011.0, tol=1e-2) is False
+
+    def test_small_values(self) -> None:
+        # Relative works for small values too
+        assert compare.near_rel(1e-15, 1.5e-15, tol=0.5) is True
+
+
+class TestNearAbs:
+    """Tests for near_abs() function."""
+
+    def test_absolute_comparison(self) -> None:
+        assert compare.near_abs(0.001, 0.002, tol=0.01) is True
+        assert compare.near_abs(0.001, 0.012, tol=0.01) is False
+
+    def test_near_zero(self) -> None:
+        assert compare.near_abs(1e-15, 0.0) is True
+        assert compare.near_abs(1e-8, 0.0, tol=1e-7) is True
+
+    def test_large_values(self) -> None:
+        # Fixed tolerance regardless of magnitude
+        assert compare.near_abs(1000.0, 1000.5, tol=1.0) is True
+        assert compare.near_abs(1000.0, 1001.5, tol=1.0) is False
+
+
 class TestNearZero:
     """Tests for near_zero() function."""
 

@@ -30,14 +30,14 @@ class TestToInt:
     """Tests for to_int() function."""
 
     def test_exact_integers(self) -> None:
-        assert clamp.to_int(3.0) == 3
-        assert clamp.to_int(-5.0) == -5
-        assert clamp.to_int(0.0) == 0
+        assert clamp.to_int(3.0) == 3.0
+        assert clamp.to_int(-5.0) == -5.0
+        assert clamp.to_int(0.0) == 0.0
 
     def test_near_integers(self) -> None:
-        assert clamp.to_int(2.9999999999) == 3
-        assert clamp.to_int(3.0000000001) == 3
-        assert clamp.to_int(-3.0000000001) == -3
+        assert clamp.to_int(2.9999999999) == 3.0
+        assert clamp.to_int(3.0000000001) == 3.0
+        assert clamp.to_int(-3.0000000001) == -3.0
 
     def test_preserve_non_integers(self) -> None:
         assert clamp.to_int(2.5) == 2.5

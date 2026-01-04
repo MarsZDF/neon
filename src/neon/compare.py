@@ -4,11 +4,14 @@ import math
 from typing import Sequence
 
 
-def near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) -> bool:
+def near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 1e-9) -> bool:
     """Check if two floats are approximately equal.
 
-    Uses the same algorithm as math.isclose():
+    Uses a hybrid tolerance approach:
         abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+    Default tolerances (rel_tol=1e-9, abs_tol=1e-9) provide practical behavior
+    for both large numbers (relative) and near-zero values (absolute).
 
     Special cases:
         - near(nan, nan) → False (NaN is not near anything)
@@ -21,13 +24,15 @@ def near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) -> 
         a: First value
         b: Second value
         rel_tol: Relative tolerance (default 1e-9)
-        abs_tol: Absolute tolerance (default 0.0)
+        abs_tol: Absolute tolerance (default 1e-9, better than math.isclose's 0.0)
 
     Returns:
         True if a and b are approximately equal
 
     Examples:
         >>> near(0.1 + 0.2, 0.3)
+        True
+        >>> near(1e-15, 0.0)  # Uses abs_tol
         True
         >>> near(1.0, 1.001, rel_tol=1e-2)
         True
@@ -48,6 +53,60 @@ def near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) -> 
 
     # Standard relative/absolute tolerance check
     return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+
+def near_rel(a: float, b: float, *, tol: float = 1e-9) -> bool:
+    """Check if two floats are approximately equal using relative tolerance only.
+
+    Purely relative comparison: abs(a - b) <= tol * max(abs(a), abs(b))
+
+    Useful when you know both values are far from zero and want percentage-based
+    comparison without absolute tolerance affecting the result.
+
+    Args:
+        a: First value
+        b: Second value
+        tol: Relative tolerance (default 1e-9)
+
+    Returns:
+        True if a and b are within relative tolerance
+
+    Examples:
+        >>> near_rel(1000.0, 1000.001, tol=1e-3)  # 0.1% tolerance
+        True
+        >>> near_rel(1000.0, 1001.0, tol=1e-3)    # 0.1% difference
+        True
+        >>> near_rel(1e-15, 2e-15, tol=1e-3)       # Works for small values
+        True
+    """
+    return near(a, b, rel_tol=tol, abs_tol=0.0)
+
+
+def near_abs(a: float, b: float, *, tol: float = 1e-9) -> bool:
+    """Check if two floats are approximately equal using absolute tolerance only.
+
+    Purely absolute comparison: abs(a - b) <= tol
+
+    Useful for near-zero comparisons or when you want a fixed tolerance
+    regardless of magnitude.
+
+    Args:
+        a: First value
+        b: Second value
+        tol: Absolute tolerance (default 1e-9)
+
+    Returns:
+        True if a and b are within absolute tolerance
+
+    Examples:
+        >>> near_abs(1e-15, 0.0)           # Default tol=1e-9
+        True
+        >>> near_abs(0.001, 0.002, tol=0.01)
+        True
+        >>> near_abs(1000.0, 1000.5, tol=1.0)
+        True
+    """
+    return near(a, b, rel_tol=0.0, abs_tol=tol)
 
 
 def near_zero(x: float, *, abs_tol: float = 1e-9) -> bool:
@@ -79,7 +138,7 @@ def near_zero(x: float, *, abs_tol: float = 1e-9) -> bool:
     return abs(x) <= abs_tol
 
 
-def less_or_near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) -> bool:
+def less_or_near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 1e-9) -> bool:
     """Check if a < b or a ≈ b.
 
     Args:
@@ -103,7 +162,7 @@ def less_or_near(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 
 
 
 def greater_or_near(
-    a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0
+    a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 1e-9
 ) -> bool:
     """Check if a > b or a ≈ b.
 
@@ -127,7 +186,7 @@ def greater_or_near(
     return a > b or near(a, b, rel_tol=rel_tol, abs_tol=abs_tol)
 
 
-def compare(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) -> int:
+def compare(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 1e-9) -> int:
     """Compare two floats with tolerance (spaceship operator).
 
     Returns:
@@ -155,7 +214,7 @@ def compare(a: float, b: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) 
 
 
 def all_near(
-    pairs: Sequence[tuple[float, float]], *, rel_tol: float = 1e-9, abs_tol: float = 0.0
+    pairs: Sequence[tuple[float, float]], *, rel_tol: float = 1e-9, abs_tol: float = 1e-9
 ) -> bool:
     """Check if all pairs of values are approximately equal.
 
@@ -204,7 +263,7 @@ def is_integer(x: float, *, abs_tol: float = 1e-9) -> bool:
 
 
 def near_many(
-    pairs: Sequence[tuple[float, float]], *, rel_tol: float = 1e-9, abs_tol: float = 0.0
+    pairs: Sequence[tuple[float, float]], *, rel_tol: float = 1e-9, abs_tol: float = 1e-9
 ) -> list[bool]:
     """Batch comparison of pairs.
 

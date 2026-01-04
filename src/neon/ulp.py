@@ -1,6 +1,7 @@
 """ULP (Unit in the Last Place) operations for floating-point numbers."""
 
 import math
+import struct
 
 from .exceptions import InvalidValueError
 
@@ -43,6 +44,9 @@ def of(x: float) -> float:
 def diff(a: float, b: float) -> int:
     """Return the distance between a and b in ULPs.
 
+    Uses IEEE 754 binary representation for O(1) computation instead of
+    iterating through nextafter() calls.
+
     Args:
         a: First value
         b: Second value
@@ -68,19 +72,29 @@ def diff(a: float, b: float) -> int:
     if a == b:
         return 0
 
-    # Count ULPs between a and b
-    count = 0
-    current = a
-    direction = math.inf if b > a else -math.inf
+    # Convert floats to their IEEE 754 binary representation
+    # Python's struct uses big-endian by default, we need to interpret as signed int
+    def float_to_int_bits(f: float) -> int:
+        # Pack as double (8 bytes), unpack as long long (signed 64-bit int)
+        bits = struct.unpack('>Q', struct.pack('>d', f))[0]
+        # Convert to signed (two's complement for negative numbers)
+        if bits >= 2**63:
+            bits -= 2**64
+        return bits
 
-    while current != b and count < 1000000:  # Safety limit
-        current = math.nextafter(current, direction)
-        count += 1
+    a_bits = float_to_int_bits(a)
+    b_bits = float_to_int_bits(b)
 
-    return count
+    # Handle sign changes (crossing zero)
+    # When crossing zero, we need special handling because IEEE 754 has -0.0 and +0.0
+    if (a < 0) != (b < 0):
+        # Different signs - need to count through zero
+        return abs(a_bits) + abs(b_bits)
+
+    return abs(a_bits - b_bits)
 
 
-def near(a: float, b: float, *, max_ulps: int = 4) -> bool:
+def within(a: float, b: float, *, max_ulps: int = 4) -> bool:
     """Check if a and b are within max_ulps of each other.
 
     Args:
@@ -92,11 +106,11 @@ def near(a: float, b: float, *, max_ulps: int = 4) -> bool:
         True if a and b are within max_ulps
 
     Examples:
-        >>> near(1.0, 1.0)
+        >>> within(1.0, 1.0)
         True
-        >>> near(1.0, add(1.0, 4))
+        >>> within(1.0, add(1.0, 4))
         True
-        >>> near(1.0, add(1.0, 5))
+        >>> within(1.0, add(1.0, 5))
         False
     """
     # Special case: exact equality

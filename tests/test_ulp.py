@@ -47,28 +47,28 @@ class TestDiff:
             ulp.diff(float("inf"), 1.0)
 
 
-class TestNear:
-    """Tests for ulp.near() function."""
+class TestWithin:
+    """Tests for ulp.within() function."""
 
     def test_exact_equality(self) -> None:
-        assert ulp.near(1.0, 1.0) is True
+        assert ulp.within(1.0, 1.0) is True
 
     def test_within_tolerance(self) -> None:
         val = ulp.add(1.0, 4)
-        assert ulp.near(1.0, val) is True
+        assert ulp.within(1.0, val) is True
 
     def test_outside_tolerance(self) -> None:
         val = ulp.add(1.0, 5)
-        assert ulp.near(1.0, val) is False
+        assert ulp.within(1.0, val) is False
 
     def test_custom_max_ulps(self) -> None:
         val = ulp.add(1.0, 10)
-        assert ulp.near(1.0, val, max_ulps=10) is True
-        assert ulp.near(1.0, val, max_ulps=5) is False
+        assert ulp.within(1.0, val, max_ulps=10) is True
+        assert ulp.within(1.0, val, max_ulps=5) is False
 
     def test_nan_handling(self) -> None:
-        assert ulp.near(float("nan"), float("nan")) is False
-        assert ulp.near(float("nan"), 1.0) is False
+        assert ulp.within(float("nan"), float("nan")) is False
+        assert ulp.within(float("nan"), 1.0) is False
 
 
 class TestNext:

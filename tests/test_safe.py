@@ -106,20 +106,18 @@ class TestPow:
 
 
 class TestSumExact:
-    """Tests for sum_exact() Kahan summation."""
+    """Tests for sum_exact() using math.fsum()."""
 
     def test_basic_sum(self) -> None:
         assert safe.sum_exact([1.0, 2.0, 3.0]) == 6.0
 
     def test_improved_precision(self) -> None:
-        # Kahan summation provides better precision for accumulated errors
-        # but can't fix loss of significance in this exact case
+        # math.fsum() provides exact summation for typical cases
         values = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-        naive_sum = sum(values)
-        kahan_sum = safe.sum_exact(values)
+        exact_sum = safe.sum_exact(values)
 
-        # Kahan is closer to 1.0 than naive
-        assert abs(kahan_sum - 1.0) <= abs(naive_sum - 1.0)
+        # fsum is exact for this case
+        assert exact_sum == 1.0
 
     def test_many_small_values(self) -> None:
         # Adding 0.1 ten times

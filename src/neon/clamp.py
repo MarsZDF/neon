@@ -1,7 +1,7 @@
 """Clamping and snapping functions."""
 
 import math
-from typing import Sequence, Union
+from typing import Sequence
 
 from .compare import near, near_zero
 
@@ -31,25 +31,27 @@ def to_zero(x: float, *, abs_tol: float = 1e-9) -> float:
     return 0.0 if near_zero(x, abs_tol=abs_tol) else x
 
 
-def to_int(x: float, *, abs_tol: float = 1e-9) -> Union[float, int]:
+def to_int(x: float, *, abs_tol: float = 1e-9) -> float:
     """Snap to nearest integer if near it, otherwise return x unchanged.
+
+    Always returns a float for consistent typing, even when snapping to an integer value.
 
     Args:
         x: Value to check
         abs_tol: Absolute tolerance (default 1e-9)
 
     Returns:
-        Integer if x is near an integer, otherwise x
+        Float value, snapped to nearest integer if within tolerance
 
     Examples:
         >>> to_int(3.0)
-        3
+        3.0
         >>> to_int(2.9999999999)
-        3
+        3.0
         >>> to_int(2.5)
         2.5
         >>> to_int(-3.0000000001)
-        -3
+        -3.0
     """
     # NaN and inf pass through unchanged
     if math.isnan(x) or math.isinf(x):
@@ -57,11 +59,11 @@ def to_int(x: float, *, abs_tol: float = 1e-9) -> Union[float, int]:
 
     rounded = round(x)
     if abs(x - rounded) <= abs_tol:
-        return int(rounded)
+        return float(rounded)
     return x
 
 
-def to_value(x: float, target: float, *, rel_tol: float = 1e-9, abs_tol: float = 0.0) -> float:
+def to_value(x: float, target: float, *, rel_tol: float = 1e-9, abs_tol: float = 1e-9) -> float:
     """Snap to target if near it, otherwise return x unchanged.
 
     Args:
@@ -113,7 +115,7 @@ def to_range(x: float, lo: float, hi: float) -> float:
 
 
 def to_values(
-    x: float, targets: Sequence[float], *, rel_tol: float = 1e-9, abs_tol: float = 0.0
+    x: float, targets: Sequence[float], *, rel_tol: float = 1e-9, abs_tol: float = 1e-9
 ) -> float:
     """Snap to nearest target if near any, otherwise return x unchanged.
 
