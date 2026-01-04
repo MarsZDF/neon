@@ -4,9 +4,8 @@ Near-equality and tolerance arithmetic for floating-point numbers.
 
 [![PyPI version](https://img.shields.io/pypi/v/elemental-neon.svg)](https://pypi.org/project/elemental-neon/)
 [![Python versions](https://img.shields.io/pypi/pyversions/elemental-neon.svg)](https://pypi.org/project/elemental-neon/)
-[![CI](https://github.com/MarsZDF/neon/workflows/CI/badge.svg)](https://github.com/MarsZDF/neon/actions)
-[![codecov](https://codecov.io/gh/MarsZDF/neon/branch/main/graph/badge.svg)](https://codecov.io/gh/MarsZDF/neon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/marszdf/neon/blob/main/neon_demo.ipynb)
 
 ## The Problem
 
