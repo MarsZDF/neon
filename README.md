@@ -57,7 +57,7 @@ pip install elemental-neon
 - You want to snap near-zero values to exactly zero
 - You need ULP-based comparisons for precise float arithmetic
 - You're building numerical algorithms, financial calculations, or scientific computing
-- You want Kahan summation for improved precision
+- You want improved summation precision with math.fsum()
 
 **Don't use neon when:**
 - You need arbitrary-precision arithmetic — use `decimal.Decimal`
@@ -73,7 +73,7 @@ Comparison functions for approximate equality.
 
 | Function | Description |
 |----------|-------------|
-| `near(a, b, *, rel_tol=1e-9, abs_tol=0.0)` | True if a and b are approximately equal |
+| `near(a, b, *, rel_tol=1e-9, abs_tol=1e-9)` | True if a and b are approximately equal |
 | `near_zero(x, *, abs_tol=1e-9)` | True if x is approximately zero |
 | `less_or_near(a, b, *, rel_tol, abs_tol)` | True if a < b or a ≈ b |
 | `greater_or_near(a, b, *, rel_tol, abs_tol)` | True if a > b or a ≈ b |
@@ -157,8 +157,8 @@ Safe arithmetic with graceful edge case handling.
 | `sqrt(x, *, default=None)` | Safe sqrt, handles negative |
 | `log(x, *, base=None, default=None)` | Safe log, handles non-positive |
 | `pow(base, exp, *, default=None)` | Safe power, handles edge cases |
-| `sum_exact(values)` | Kahan summation for precision |
-| `mean_exact(values)` | Mean using Kahan summation |
+| `sum_exact(values)` | Precise summation using math.fsum() |
+| `mean_exact(values)` | Mean using math.fsum() |
 
 ```python
 from neon import safe
@@ -196,7 +196,7 @@ ULP (Unit in the Last Place) operations — the distance between adjacent floats
 |----------|-------------|
 | `of(x)` | Returns the ULP of x |
 | `diff(a, b)` | Distance in ULPs between a and b |
-| `near(a, b, *, max_ulps=4)` | True if within max_ulps |
+| `within(a, b, *, max_ulps=4)` | True if within max_ulps |
 | `next(x)` | Next representable float above x |
 | `prev(x)` | Next representable float below x |
 | `add(x, n)` | Move n ULPs from x |
@@ -209,8 +209,8 @@ ulp.of(1e10)                   # → 1.9073486328125e-06
 ulp.of(0.0)                    # → 5e-324 (smallest denormal)
 
 ulp.diff(1.0, 1.0 + 2.2e-16)   # → 1 (one ULP)
-ulp.near(1.0, 1.0 + 1e-15)     # → True (within 4 ULPs)
-ulp.near(1.0, 1.0001)          # → False
+ulp.within(1.0, 1.0 + 1e-15)   # → True (within 4 ULPs)
+ulp.within(1.0, 1.0001)        # → False
 
 ulp.next(1.0)                  # → 1.0000000000000002
 ulp.prev(1.0)                  # → 0.9999999999999999
@@ -321,8 +321,8 @@ from neon import ulp
 a = 1.0
 b = ulp.add(a, 2)  # Exactly 2 ULPs away
 
-ulp.near(a, b, max_ulps=4)  # → True
-ulp.near(a, b, max_ulps=1)  # → False
+ulp.within(a, b, max_ulps=4)  # → True
+ulp.within(a, b, max_ulps=1)  # → False
 ```
 
 ## Why Neon?
@@ -348,7 +348,7 @@ False  # Maybe should be True?
 - **Explicit tolerances** — no magic defaults
 - **IEEE 754 aware** — proper NaN, inf, denormal handling
 - **Fail loudly** — raises exceptions for invalid inputs
-- **Kahan summation** — improved precision for sums
+- **math.fsum()** — improved precision for sums using Python's C implementation
 - **ULP operations** — direct access to float representation
 
 ### Math Model
@@ -364,7 +364,7 @@ abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 For ULP operations, Neon uses `math.nextafter()` (Python 3.9+) to manipulate the actual float representation.
 
-For summation, Neon uses **Kahan compensated summation** to reduce floating-point error accumulation.
+For summation, Neon uses **math.fsum()** (Python's C-optimized compensated summation) to reduce floating-point error accumulation.
 
 ### Use Cases
 
@@ -399,8 +399,8 @@ Neon uses standard Python `float` (IEEE 754 double precision):
 **Edge cases:**
 - `NaN` and `Infinity` inputs are handled explicitly
 - ULP operations work correctly near zero (denormals)
-- Kahan summation reduces but doesn't eliminate all rounding errors
-- Tolerances default to `rel_tol=1e-9, abs_tol=0.0` (same as `math.isclose()`)
+- math.fsum() reduces but doesn't eliminate all rounding errors
+- Tolerances default to `rel_tol=1e-9, abs_tol=1e-9` (better than math.isclose's abs_tol=0.0)
 
 **Not suitable for:** Applications requiring arbitrary precision or guaranteed decimal accuracy (use `decimal.Decimal`).
 
