@@ -41,9 +41,13 @@ def to_zero(x: float, *, abs_tol: float = 1e-9) -> float:
 
 
 def to_int(x: float, *, abs_tol: float = 1e-9) -> float:
-    """Snap to nearest integer if near it, otherwise return x unchanged.
+    """Snap to nearest integer value if near it, otherwise return x unchanged.
 
-    Always returns a float for consistent typing, even when snapping to an integer value.
+    IMPORTANT: Always returns a float type (e.g., 3.0, not 3) for consistent typing,
+    even when snapping to an integer value. The name "to_int" refers to snapping to
+    an integer VALUE, not converting to the int TYPE.
+
+    If you need an actual int type for indexing, use int(result) after calling this.
 
     Args:
         x: Value to check
@@ -61,6 +65,8 @@ def to_int(x: float, *, abs_tol: float = 1e-9) -> float:
         2.5
         >>> to_int(-3.0000000001)
         -3.0
+        >>> int(to_int(2.9999999999))  # For list indexing
+        3
     """
     # NaN and inf pass through unchanged
     if math.isnan(x) or math.isinf(x):

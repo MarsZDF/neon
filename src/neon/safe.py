@@ -101,7 +101,10 @@ def div_or_inf(a: float, b: float, *, zero_tol: float = 0.0) -> float:
 def mod(
     a: float, b: float, *, default: Optional[float] = None, zero_tol: float = 0.0
 ) -> Optional[float]:
-    """Safe modulo with zero handling.
+    """Safe modulo with zero handling using IEEE 754 semantics.
+
+    Uses math.fmod() which matches IEEE 754 behavior (result has sign of dividend).
+    This avoids wrapping small negative errors to large positive values.
 
     Args:
         a: Dividend
@@ -110,7 +113,7 @@ def mod(
         zero_tol: Tolerance for considering b as zero (default 0.0)
 
     Returns:
-        a % b if b is not zero, otherwise default
+        fmod(a, b) if b is not zero, otherwise default
 
     Examples:
         >>> mod(7, 3)
@@ -118,10 +121,12 @@ def mod(
         >>> mod(7, 0)
         >>> mod(7, 0, default=0.0)
         0.0
+        >>> mod(-1e-100, 1.0)  # Preserves sign of dividend
+        -1e-100
     """
     if near_zero(b, abs_tol=zero_tol):
         return default
-    return a % b
+    return math.fmod(a, b)
 
 
 def sqrt(x: float, *, default: Optional[float] = None) -> Optional[float]:
@@ -151,15 +156,15 @@ def sqrt(x: float, *, default: Optional[float] = None) -> Optional[float]:
 def log(
     x: float, *, base: Optional[float] = None, default: Optional[float] = None
 ) -> Optional[float]:
-    """Safe logarithm that handles non-positive inputs.
+    """Safe logarithm that handles non-positive inputs and invalid bases.
 
     Args:
         x: Value to take logarithm of
         base: Logarithm base (default e, natural log)
-        default: Value to return if x <= 0 (default None)
+        default: Value to return if x <= 0 or base is invalid (default None)
 
     Returns:
-        log(x) if x > 0, otherwise default
+        log(x) if x > 0 and base is valid, otherwise default
 
     Examples:
         >>> import math
@@ -169,13 +174,18 @@ def log(
         >>> log(-1)
         >>> log(100, base=10)
         2.0
+        >>> log(10, base=1.0)  # Invalid base
+        >>> log(10, base=-2.0)  # Invalid base
     """
     if x <= 0:
         return default
 
-    if base is None:
-        return math.log(x)
-    return math.log(x, base)
+    try:
+        if base is None:
+            return math.log(x)
+        return math.log(x, base)
+    except (ValueError, ZeroDivisionError):
+        return default
 
 
 def pow(base: float, exp: float, *, default: Optional[float] = None) -> Optional[float]:
@@ -200,7 +210,7 @@ def pow(base: float, exp: float, *, default: Optional[float] = None) -> Optional
     """
     try:
         return cast(float, base**exp)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError, OverflowError):
         return default
 
 

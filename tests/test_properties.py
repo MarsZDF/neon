@@ -192,6 +192,11 @@ class TestSafeProperties:
         naive_sum = sum(values)
         assume(not math.isinf(naive_sum))
         result = safe.mean_exact(values)
-        # For floating point with large integers, the mean might not be exactly in range
-        # due to rounding, so we use a tolerance
-        assert min(values) - 1 <= result <= max(values) + 1
+        # For floating point, the mean should be within the range of values
+        # Use a relative tolerance for large values
+        min_val = min(values)
+        max_val = max(values)
+        # Use relative tolerance based on the magnitude of the values
+        magnitude = max(abs(min_val), abs(max_val))
+        tolerance = max(1.0, magnitude * 1e-10)
+        assert min_val - tolerance <= result <= max_val + tolerance

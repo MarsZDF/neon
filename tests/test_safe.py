@@ -62,6 +62,14 @@ class TestMod:
         assert safe.mod(7, 0) is None
         assert safe.mod(7, 0, default=0.0) == 0.0
 
+    def test_fmod_semantics(self) -> None:
+        """Test that mod uses math.fmod (sign of dividend) not % (sign of divisor)."""
+        # math.fmod preserves sign of dividend
+        result = safe.mod(-1e-100, 1.0)
+        assert result is not None
+        assert result < 0  # Negative, matching dividend
+        assert abs(result - (-1e-100)) < 1e-110
+
 
 class TestSqrt:
     """Tests for sqrt() function."""
@@ -92,6 +100,17 @@ class TestLog:
         assert safe.log(-1) is None
         assert safe.log(-1, default=0.0) == 0.0
 
+    def test_invalid_base(self) -> None:
+        """Test that invalid bases are handled safely."""
+        # base=1.0 causes ZeroDivisionError in math.log
+        assert safe.log(10, base=1.0) is None
+        assert safe.log(10, base=1.0, default=0.0) == 0.0
+
+        # base <= 0 causes ValueError
+        assert safe.log(10, base=-2.0) is None
+        assert safe.log(10, base=0.0) is None
+        assert safe.log(10, base=-2.0, default=99.0) == 99.0
+
 
 class TestPow:
     """Tests for pow() function."""
@@ -104,6 +123,16 @@ class TestPow:
         assert safe.pow(0, 0) == 1.0  # By convention
         # Note: Python 3 doesn't raise for (-1)**0.5, it returns complex
         # So safe.pow won't return None for this case
+
+    def test_overflow(self) -> None:
+        """Test that OverflowError is caught and returns default."""
+        # 10.0**1000 would overflow
+        assert safe.pow(10.0, 1000.0) is None
+        assert safe.pow(10.0, 1000.0, default=0.0) == 0.0
+
+        # Very large base and exponent
+        assert safe.pow(1e200, 1e200) is None
+        assert safe.pow(1e200, 1e200, default=float("inf")) == float("inf")
 
 
 class TestSumExact:
