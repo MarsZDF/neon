@@ -16,7 +16,7 @@ Example:
     True
 """
 
-from . import clamp, compare, safe, ulp
+from . import clamp, compare, inspect, safe, ulp
 from .clamp import to_int, to_range, to_zero
 
 # Export most commonly used functions at top level for ergonomics
@@ -32,7 +32,7 @@ from .ulp import diff as ulp_diff
 from .ulp import of as ulp_of
 from .ulp import within as ulp_within
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     # Modules
@@ -40,6 +40,7 @@ __all__ = [
     "clamp",
     "safe",
     "ulp",
+    "inspect",  # New in v1.1.0
     # Exceptions
     "NeonError",
     "InvalidValueError",

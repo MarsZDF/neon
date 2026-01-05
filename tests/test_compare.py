@@ -170,3 +170,47 @@ class TestNearMany:
 
     def test_empty_list(self) -> None:
         assert compare.near_many([]) == []
+
+
+class TestNearZeroMany:
+    """Tests for near_zero_many() batch function."""
+
+    def test_batch_near_zero(self) -> None:
+        values = [1e-15, 0.5, -1e-16, 1.0, 2e-17]
+        result = compare.near_zero_many(values)
+        assert result == [True, False, True, False, True]
+
+    def test_with_custom_tolerance(self) -> None:
+        values = [1e-5, 1e-10, 1e-15]
+        result = compare.near_zero_many(values, abs_tol=1e-9)
+        assert result == [False, True, True]
+
+    def test_empty_list(self) -> None:
+        assert compare.near_zero_many([]) == []
+
+    def test_special_values(self) -> None:
+        values = [0.0, float('nan'), float('inf')]
+        result = compare.near_zero_many(values)
+        assert result == [True, False, False]
+
+
+class TestIsIntegerMany:
+    """Tests for is_integer_many() batch function."""
+
+    def test_batch_integer_check(self) -> None:
+        values = [3.0, 2.99999999999, 3.1, 5.00000000001]
+        result = compare.is_integer_many(values)
+        assert result == [True, True, False, True]
+
+    def test_with_custom_tolerance(self) -> None:
+        values = [3.1, 3.001, 3.0001]
+        result = compare.is_integer_many(values, abs_tol=1e-3)
+        assert result == [False, True, True]
+
+    def test_empty_list(self) -> None:
+        assert compare.is_integer_many([]) == []
+
+    def test_special_values(self) -> None:
+        values = [0.0, float('nan'), float('inf')]
+        result = compare.is_integer_many(values)
+        assert result == [True, False, False]

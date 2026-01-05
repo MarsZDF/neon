@@ -11,7 +11,10 @@ __all__ = [
     "to_value",
     "to_range",
     "to_values",
+    # Batch operations
     "to_zero_many",
+    "to_int_many",
+    "to_range_many",
 ]
 
 
@@ -176,3 +179,38 @@ def to_zero_many(values: Sequence[float], *, abs_tol: float = 1e-9) -> list[floa
         [0.0, 0.1, 0.0]
     """
     return [to_zero(x, abs_tol=abs_tol) for x in values]
+
+
+def to_int_many(values: Sequence[float], *, abs_tol: float = 1e-9) -> list[float]:
+    """Batch snap to nearest integer.
+
+    Args:
+        values: Sequence of values
+        abs_tol: Absolute tolerance (default 1e-9)
+
+    Returns:
+        List of values snapped to integers where applicable
+
+    Examples:
+        >>> to_int_many([2.9999999, 3.1, 5.0])
+        [3.0, 3.1, 5.0]
+    """
+    return [to_int(x, abs_tol=abs_tol) for x in values]
+
+
+def to_range_many(values: Sequence[float], lo: float, hi: float) -> list[float]:
+    """Batch clamp to range.
+
+    Args:
+        values: Sequence of values
+        lo: Lower bound
+        hi: Upper bound
+
+    Returns:
+        List of values clamped to [lo, hi]
+
+    Examples:
+        >>> to_range_many([5, -5, 15], 0, 10)
+        [5, 0, 10]
+    """
+    return [to_range(x, lo, hi) for x in values]

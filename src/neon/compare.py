@@ -14,6 +14,9 @@ __all__ = [
     "greater_or_near",
     "all_near",
     "near_many",
+    # Batch operations
+    "near_zero_many",
+    "is_integer_many",
 ]
 
 
@@ -293,3 +296,37 @@ def near_many(
         [True, True, False]
     """
     return [near(a, b, rel_tol=rel_tol, abs_tol=abs_tol) for a, b in pairs]
+
+
+def near_zero_many(values: Sequence[float], *, abs_tol: float = 1e-9) -> list[bool]:
+    """Batch near-zero check.
+
+    Args:
+        values: Values to check
+        abs_tol: Absolute tolerance (default 1e-9)
+
+    Returns:
+        List of boolean results
+
+    Examples:
+        >>> near_zero_many([1e-15, 0.1, -1e-16])
+        [True, False, True]
+    """
+    return [near_zero(x, abs_tol=abs_tol) for x in values]
+
+
+def is_integer_many(values: Sequence[float], *, abs_tol: float = 1e-9) -> list[bool]:
+    """Batch integer check.
+
+    Args:
+        values: Values to check
+        abs_tol: Absolute tolerance (default 1e-9)
+
+    Returns:
+        List of boolean results
+
+    Examples:
+        >>> is_integer_many([3.0, 3.1, 2.9999999999])
+        [True, False, True]
+    """
+    return [is_integer(x, abs_tol=abs_tol) for x in values]

@@ -17,6 +17,11 @@ __all__ = [
     "pow",
     "sum_exact",
     "mean_exact",
+    # Batch operations
+    "div_many",
+    "sqrt_many",
+    "log_many",
+    "pow_many",
 ]
 
 
@@ -264,3 +269,112 @@ def mean_exact(values: Sequence[float]) -> float:
     """
     validate_non_empty(values, "values")
     return sum_exact(values) / len(values)
+
+
+# ============================================================================
+# Batch Operations
+# ============================================================================
+
+
+def div_many(
+    a_values: Sequence[float],
+    b_values: Sequence[float],
+    *,
+    default: Optional[float] = None,
+    zero_tol: float = 0.0,
+) -> list[Optional[float]]:
+    """Batch safe division.
+
+    Args:
+        a_values: Numerators
+        b_values: Denominators
+        default: Value to return for zero divisions
+        zero_tol: Tolerance for considering b as zero
+
+    Returns:
+        List of division results
+
+    Raises:
+        ValueError: If a_values and b_values have different lengths
+
+    Examples:
+        >>> div_many([6, 4], [3, 2])
+        [2.0, 2.0]
+        >>> div_many([1, 2, 3], [0, 2, 0], default=0.0)
+        [0.0, 1.0, 0.0]
+    """
+    if len(a_values) != len(b_values):
+        raise ValueError(f"Input sequences must have equal length (got {len(a_values)} and {len(b_values)})")
+    return [div(a, b, default=default, zero_tol=zero_tol) for a, b in zip(a_values, b_values)]
+
+
+def sqrt_many(
+    values: Sequence[float], *, default: Optional[float] = None
+) -> list[Optional[float]]:
+    """Batch safe square root.
+
+    Args:
+        values: Values to take square root of
+        default: Value to return for negative inputs
+
+    Returns:
+        List of sqrt results
+
+    Examples:
+        >>> sqrt_many([4, 9, 16])
+        [2.0, 3.0, 4.0]
+        >>> sqrt_many([4, -1, 9], default=0.0)
+        [2.0, 0.0, 3.0]
+    """
+    return [sqrt(x, default=default) for x in values]
+
+
+def log_many(
+    values: Sequence[float],
+    *,
+    base: Optional[float] = None,
+    default: Optional[float] = None,
+) -> list[Optional[float]]:
+    """Batch safe logarithm.
+
+    Args:
+        values: Values to take logarithm of
+        base: Logarithm base (default e)
+        default: Value to return for invalid inputs
+
+    Returns:
+        List of log results
+
+    Examples:
+        >>> log_many([1, 10, 100], base=10)
+        [0.0, 1.0, 2.0]
+    """
+    return [log(x, base=base, default=default) for x in values]
+
+
+def pow_many(
+    bases: Sequence[float],
+    exps: Sequence[float],
+    *,
+    default: Optional[float] = None,
+) -> list[Optional[float]]:
+    """Batch safe power.
+
+    Args:
+        bases: Base values
+        exps: Exponents
+        default: Value to return on error
+
+    Returns:
+        List of power results
+
+    Raises:
+        ValueError: If bases and exps have different lengths
+
+    Examples:
+        >>> pow_many([2, 3, 4], [3, 2, 1])
+        [8.0, 9.0, 4.0]
+    """
+    if len(bases) != len(exps):
+        raise ValueError(f"Input sequences must have equal length (got {len(bases)} and {len(exps)})")
+    return [pow(b, e, default=default) for b, e in zip(bases, exps)]

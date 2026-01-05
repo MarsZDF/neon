@@ -13,6 +13,10 @@ __all__ = [
     "next",
     "prev",
     "add",
+    # Batch operations
+    "of_many",
+    "diff_many",
+    "within_many",
 ]
 
 
@@ -207,3 +211,76 @@ def add(x: float, n: int) -> float:
     for _ in range(abs(n)):
         result = math.nextafter(result, direction)
     return result
+
+
+# ============================================================================
+# Batch Operations
+# ============================================================================
+
+
+def of_many(values: list[float]) -> list[float]:
+    """Get ULP for each value.
+
+    Args:
+        values: Values to get ULPs for
+
+    Returns:
+        List of ULP values
+
+    Raises:
+        InvalidValueError: If any value is NaN
+
+    Examples:
+        >>> ulps = of_many([1.0, 2.0, 0.0])
+        >>> ulps[0] > 0
+        True
+    """
+    return [of(x) for x in values]
+
+
+def diff_many(a_values: list[float], b_values: list[float]) -> list[int]:
+    """ULP distances between pairs.
+
+    Args:
+        a_values: First values
+        b_values: Second values
+
+    Returns:
+        List of ULP distances
+
+    Raises:
+        InvalidValueError: If any value is NaN or inf
+        ValueError: If a_values and b_values have different lengths
+
+    Examples:
+        >>> diff_many([1.0, 2.0], [1.0001, 2.0001])
+        [450359962737, 450359962737]
+    """
+    if len(a_values) != len(b_values):
+        raise ValueError(f"Input sequences must have equal length (got {len(a_values)} and {len(b_values)})")
+    return [diff(a, b) for a, b in zip(a_values, b_values)]
+
+
+def within_many(
+    a_values: list[float], b_values: list[float], *, max_ulps: int = 4
+) -> list[bool]:
+    """Check if pairs are within max_ulps.
+
+    Args:
+        a_values: First values
+        b_values: Second values
+        max_ulps: Maximum ULP distance (default 4)
+
+    Returns:
+        List of boolean results
+
+    Raises:
+        ValueError: If a_values and b_values have different lengths
+
+    Examples:
+        >>> within_many([1.0, 2.0], [1.0 + 1e-15, 2.1])
+        [True, False]
+    """
+    if len(a_values) != len(b_values):
+        raise ValueError(f"Input sequences must have equal length (got {len(a_values)} and {len(b_values)})")
+    return [within(a, b, max_ulps=max_ulps) for a, b in zip(a_values, b_values)]

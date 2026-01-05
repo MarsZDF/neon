@@ -108,3 +108,51 @@ class TestToZeroMany:
 
     def test_empty_list(self) -> None:
         assert clamp.to_zero_many([]) == []
+
+
+class TestToIntMany:
+    """Tests for to_int_many() batch function."""
+
+    def test_batch_snap_to_int(self) -> None:
+        result = clamp.to_int_many([2.99999999999, 3.1, 5.0, 7.00000000001])
+        assert result == [3.0, 3.1, 5.0, 7.0]
+
+    def test_with_custom_tolerance(self) -> None:
+        result = clamp.to_int_many([2.01, 2.001], abs_tol=1e-2)
+        assert result == [2.0, 2.0]
+
+    def test_empty_list(self) -> None:
+        assert clamp.to_int_many([]) == []
+
+    def test_nan_and_inf_passthrough(self) -> None:
+        import math
+        result = clamp.to_int_many([3.0, float('nan'), float('inf')])
+        assert result[0] == 3.0
+        assert math.isnan(result[1])
+        assert math.isinf(result[2])
+
+
+class TestToRangeMany:
+    """Tests for to_range_many() batch function."""
+
+    def test_batch_clamp_to_range(self) -> None:
+        result = clamp.to_range_many([5, -5, 15, 7], 0, 10)
+        assert result == [5, 0, 10, 7]
+
+    def test_all_within_range(self) -> None:
+        result = clamp.to_range_many([1, 2, 3], 0, 10)
+        assert result == [1, 2, 3]
+
+    def test_all_outside_range(self) -> None:
+        result = clamp.to_range_many([-10, -5, 15], 0, 10)
+        assert result == [0, 0, 10]
+
+    def test_empty_list(self) -> None:
+        assert clamp.to_range_many([], 0, 10) == []
+
+    def test_nan_passthrough(self) -> None:
+        import math
+        result = clamp.to_range_many([5, float('nan'), 15], 0, 10)
+        assert result[0] == 5
+        assert math.isnan(result[1])
+        assert result[2] == 10

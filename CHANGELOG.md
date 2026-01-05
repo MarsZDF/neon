@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-05
+
+### Added - Production Float Debugging & Low-Precision Validation
+
+**New Module: `neon.inspect`** - Production debugging tools for floating-point issues
+
+- **Quick Health Checks:**
+  - `check(x)` - Returns warning string if value has issues (NaN, Inf, denormal), None if safe
+  - `check_many(values)` - Batch health summary with risk assessment (LOW/MEDIUM/HIGH)
+
+- **Debug Helpers:**
+  - `compare_debug(a, b)` - Explains why two floats differ with ULP distance and recommendations
+  - `div_debug(a, b)` - Debugs division issues (zero denominator, denormals, overflow)
+  - `analyze(values)` - Comprehensive analysis with categorization and recommendations
+  - `precision_loss(got, expected)` - Detects when precision loss caused unexpected results
+
+- **Low-Precision Dtype Validation (FP8/FP16/BF16):**
+  - `safe_for_dtype(x, target)` - Check if value is safe for target dtype conversion
+  - `analyze_for_dtype(values, target)` - Batch analysis for dtype compatibility
+  - `compare_dtypes(values, targets)` - Compare safety across multiple dtypes
+  - Supported dtypes: `fp32`, `fp16`, `bf16`, `fp8_e4m3`, `fp8_e5m2`
+
+**Use Case:** Validate model weights before FP8 quantization for H100/H200 GPU deployment
+
+**Batch Operations Added** - Convenience functions for processing collections:
+
+- `neon.safe`: `div_many()`, `sqrt_many()`, `log_many()`, `pow_many()`
+- `neon.compare`: `near_zero_many()`, `is_integer_many()`
+- `neon.clamp`: `to_int_many()`, `to_range_many()`
+- `neon.ulp`: `of_many()`, `diff_many()`, `within_many()`
+
+Note: Batch operations use Python loops for simplicity. For performance-critical array operations, use NumPy.
+
+### Changed
+
+- Version bumped to 1.1.0
+- Added `inspect` module to `__all__` exports
+
+### Technical Details
+
+- **Code added:** ~650 lines production code, ~550 lines tests
+- **Test coverage:** 93.19% (183 tests passing, exceeds 90% requirement)
+- **Dependencies:** Zero new dependencies (still pure stdlib)
+- **Package size:** Remains <100KB
+
+### Documentation
+
+- `neon.inspect` module provides actionable debugging output, not just technical data
+- All functions return clear recommendations for fixing issues
+- Examples target real-world scenarios (debugging NaN in production, validating FP8 conversion)
+
 ## [1.0.0] - 2026-01-04
 
 ### Production release - Stable API

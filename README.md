@@ -32,13 +32,14 @@ True  # Wrong! This is a 0.00001% difference, not "near equal"
 Neon handles these correctly:
 
 ```python
-from neon import compare, safe, clamp, ulp
+from neon import compare, safe, clamp, ulp, inspect
 
 compare.near(0.1 + 0.2, 0.3)           # → True
 compare.near_zero(1e-16)               # → True
 safe.div(1, 0, default=0.0)            # → 0.0
 clamp.to_zero(1e-15)                   # → 0.0
 ulp.diff(1.0, ulp.next(1.0))           # → 1 (one ULP apart)
+inspect.check(float('nan'))            # → "Value is NaN - invalid calculation result" ✨ v1.1.0
 ```
 
 ## Installation
@@ -53,11 +54,13 @@ pip install elemental-neon
 
 **Use neon when:**
 - You need correct floating-point comparisons (within tolerance)
+- You're debugging NaN/Inf issues in production or validating FP8/FP16 quantization ✨ v1.1.0
 - You're doing safe division that handles zero gracefully
 - You want to snap near-zero values to exactly zero
 - You need ULP-based comparisons for precise float arithmetic
 - You're building numerical algorithms, financial calculations, or scientific computing
 - You want improved summation precision with math.fsum()
+- You need to process batches of floats with safe operations ✨ v1.1.0
 
 **Don't use neon when:**
 - You need arbitrary-precision arithmetic — use `decimal.Decimal`
@@ -66,6 +69,68 @@ pip install elemental-neon
 - Standard `==` comparison is actually what you want (rare for floats)
 
 ## API Reference
+
+### `neon.inspect` ✨ New in v1.1.0
+
+Production debugging tools for floating-point issues and low-precision dtype validation.
+
+| Function | Description |
+|----------|-------------|
+| `check(x)` | Quick health check, returns warning or None |
+| `check_many(values)` | Batch health summary with risk assessment |
+| `compare_debug(a, b)` | Explains why floats differ + recommends fix |
+| `div_debug(a, b)` | Debugs division issues |
+| `analyze(values)` | Comprehensive analysis with recommendations |
+| `precision_loss(got, expected)` | Detects precision loss |
+| `safe_for_dtype(x, target)` | Check if value safe for target dtype |
+| `analyze_for_dtype(values, target)` | Batch analysis for dtype conversion |
+| `compare_dtypes(values, targets)` | Compare safety across multiple dtypes |
+
+**Supported dtypes:** `fp32`, `fp16`, `bf16`, `fp8_e4m3`, `fp8_e5m2`
+
+```python
+from neon import inspect as ni
+
+# Quick health check
+if issue := ni.check(result):
+    print(f"Problem: {issue}")
+    # → "Value is NaN - invalid calculation result"
+
+# Debug why floats differ
+ni.compare_debug(0.1 + 0.2, 0.3)
+# → "Values differ by 5.551115123e-17 (1 ULP). Use neon.compare.near() for tolerance comparison."
+
+# Debug division issues
+ni.div_debug(1.0, 0.0)
+# → "Division by zero detected. Use neon.safe.div(a, b, default=...) to handle gracefully."
+
+# Analyze batch of values
+report = ni.analyze([1.0, 5e-324, float('nan'), 2.0])
+print(report)
+# → Analysis of 4 values:
+#   Normal: 2 (50.0%)
+#   Denormal: 1 (25.0%)
+#   NaN: 1 (25.0%)
+#   Precision Risk: HIGH
+
+# Validate FP8 quantization before converting model
+weights = model.get_weights().flatten().tolist()
+report = ni.analyze_for_dtype(weights, target='fp8_e4m3')
+if report.overflow > 0:
+    print(f"WARNING: {report.recommendation}")
+    # → "WARNING: 15% of values overflow FP8 range (max ±448). Consider clipping."
+
+# Compare multiple dtypes
+comparison = ni.compare_dtypes(activations, targets=['fp16', 'bf16', 'fp8_e4m3'])
+print(comparison.recommendation)
+# → "Use BF16 for best balance (0% overflow, LOW precision risk)"
+```
+
+**Use cases:**
+- Debug NaN/Inf in production calculations
+- Understand precision loss in numerical algorithms
+- Validate model weights before FP8/FP16 quantization
+- Post-mortem analysis of training failures
 
 ### `neon.compare`
 
@@ -81,6 +146,8 @@ Comparison functions for approximate equality.
 | `all_near(pairs, *, rel_tol, abs_tol)` | True if all pairs are near |
 | `is_integer(x, *, abs_tol=1e-9)` | True if x is near an integer |
 | `near_many(pairs, *, rel_tol, abs_tol)` | Batch comparison |
+| `near_zero_many(values, *, abs_tol)` | Batch near-zero check ✨ v1.1.0 |
+| `is_integer_many(values, *, abs_tol)` | Batch integer check ✨ v1.1.0 |
 
 ```python
 from neon import compare
@@ -124,6 +191,8 @@ Clamping and snapping functions.
 | `to_range(x, lo, hi)` | Clamp x to [lo, hi] |
 | `to_values(x, targets, *, rel_tol, abs_tol)` | Snap to nearest target |
 | `to_zero_many(values, *, abs_tol)` | Batch snap to zero |
+| `to_int_many(values, *, abs_tol)` | Batch snap to integer ✨ v1.1.0 |
+| `to_range_many(values, lo, hi)` | Batch clamp to range ✨ v1.1.0 |
 
 ```python
 from neon import clamp
@@ -159,6 +228,10 @@ Safe arithmetic with graceful edge case handling.
 | `pow(base, exp, *, default=None)` | Safe power, handles edge cases |
 | `sum_exact(values)` | Precise summation using math.fsum() |
 | `mean_exact(values)` | Mean using math.fsum() |
+| `div_many(a_values, b_values, *, default, zero_tol)` | Batch safe division ✨ v1.1.0 |
+| `sqrt_many(values, *, default)` | Batch safe sqrt ✨ v1.1.0 |
+| `log_many(values, *, base, default)` | Batch safe log ✨ v1.1.0 |
+| `pow_many(bases, exps, *, default)` | Batch safe power ✨ v1.1.0 |
 
 ```python
 from neon import safe
@@ -200,6 +273,9 @@ ULP (Unit in the Last Place) operations — the distance between adjacent floats
 | `next(x)` | Next representable float above x |
 | `prev(x)` | Next representable float below x |
 | `add(x, n)` | Move n ULPs from x |
+| `of_many(values)` | Batch ULP calculation ✨ v1.1.0 |
+| `diff_many(a_values, b_values)` | Batch ULP distance ✨ v1.1.0 |
+| `within_many(a_values, b_values, *, max_ulps)` | Batch ULP comparison ✨ v1.1.0 |
 
 ```python
 from neon import ulp

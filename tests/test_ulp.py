@@ -113,3 +113,75 @@ class TestAdd:
         moved = ulp.add(original, 5)
         back = ulp.add(moved, -5)
         assert back == original
+
+
+class TestOfMany:
+    """Tests for of_many() batch function."""
+
+    def test_batch_ulp_calculation(self) -> None:
+        values = [1.0, 10.0, 100.0]
+        ulps = ulp.of_many(values)
+        assert len(ulps) == 3
+        assert all(u > 0 for u in ulps)
+        # ULP size should increase with magnitude
+        assert ulps[1] > ulps[0]
+        assert ulps[2] > ulps[1]
+
+    def test_zero_value(self) -> None:
+        ulps = ulp.of_many([0.0, 1.0])
+        assert ulps[0] > 0  # Smallest denormal
+        assert ulps[1] > 0
+
+    def test_empty_list(self) -> None:
+        assert ulp.of_many([]) == []
+
+    def test_raises_on_nan(self) -> None:
+        from neon.exceptions import InvalidValueError
+        with pytest.raises(InvalidValueError):
+            ulp.of_many([1.0, float('nan')])
+
+
+class TestDiffMany:
+    """Tests for diff_many() batch function."""
+
+    def test_batch_ulp_distance(self) -> None:
+        a_values = [1.0, 2.0]
+        b_values = [1.0, 2.0]
+        result = ulp.diff_many(a_values, b_values)
+        assert result == [0, 0]
+
+    def test_adjacent_values(self) -> None:
+        a_values = [1.0, 2.0]
+        b_values = [ulp.next(1.0), ulp.next(2.0)]
+        result = ulp.diff_many(a_values, b_values)
+        assert result == [1, 1]
+
+    def test_mismatched_lengths_raises(self) -> None:
+        with pytest.raises(ValueError):
+            ulp.diff_many([1.0, 2.0], [1.0])
+
+    def test_raises_on_nan(self) -> None:
+        from neon.exceptions import InvalidValueError
+        with pytest.raises(InvalidValueError):
+            ulp.diff_many([1.0], [float('nan')])
+
+
+class TestWithinMany:
+    """Tests for within_many() batch function."""
+
+    def test_batch_ulp_comparison(self) -> None:
+        a_values = [1.0, 2.0]
+        b_values = [1.0, 2.1]
+        result = ulp.within_many(a_values, b_values, max_ulps=4)
+        assert result[0] is True   # Exact match
+        assert result[1] is False  # Too far apart
+
+    def test_custom_max_ulps(self) -> None:
+        a_values = [1.0]
+        b_values = [ulp.add(1.0, 10)]
+        result = ulp.within_many(a_values, b_values, max_ulps=20)
+        assert result == [True]
+
+    def test_mismatched_lengths_raises(self) -> None:
+        with pytest.raises(ValueError):
+            ulp.within_many([1.0, 2.0], [1.0])
