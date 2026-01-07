@@ -22,6 +22,11 @@ __all__ = [
     "compare_dtypes",
 ]
 
+# Module-level constants
+DENORMAL_THRESHOLD = 2.225073858507201e-308  # Smallest normal float64
+RISK_THRESHOLD_PERCENT = 0.05  # 5% denormals triggers MEDIUM risk
+RISK_LEVEL_SCORE = {"HIGH": 2, "MEDIUM": 1, "LOW": 0}  # For dtype comparison sorting
+
 # Float format limits for dtype validation
 DTYPE_LIMITS = {
     "fp32": {"min": 1.175494e-38, "max": 3.4028235e38},
@@ -41,9 +46,44 @@ def _categorize(x: float) -> Literal["zero", "denormal", "normal", "nan", "inf"]
     if x == 0.0:
         return "zero"
     # Denormals are smaller than minimum normal FP64
-    if abs(x) < 2.225073858507201e-308:
+    if abs(x) < DENORMAL_THRESHOLD:
         return "denormal"
     return "normal"
+
+
+def _assess_risk(counts: dict, total: int) -> Literal["LOW", "MEDIUM", "HIGH"]:
+    """Assess precision risk from categorized float counts.
+
+    Args:
+        counts: Dictionary with keys "nan", "inf", "denormal", etc.
+        total: Total number of values
+
+    Returns:
+        Risk level: "HIGH" if NaN/Inf present, "MEDIUM" if >5% denormals, else "LOW"
+    """
+    if counts.get("nan", 0) > 0 or counts.get("inf", 0) > 0:
+        return "HIGH"
+    elif total > 0 and (counts.get("denormal", 0) / total) > RISK_THRESHOLD_PERCENT:
+        return "MEDIUM"
+    return "LOW"
+
+
+def _dtype_comparison_key(item: tuple) -> tuple:
+    """Key function for sorting dtype comparison results.
+
+    Args:
+        item: Tuple of (dtype_name, results_dict)
+
+    Returns:
+        Sort key prioritizing invalid, overflow, underflow, then risk level
+    """
+    results = item[1]
+    return (
+        results["invalid"],
+        results["overflow"],
+        results["underflow"],
+        RISK_LEVEL_SCORE[results["precision_loss"]],
+    )
 
 
 # ============================================================================
@@ -122,11 +162,7 @@ def check_many(values: List[float]) -> str:
         issues.append(f"{counts['inf']} Inf")
 
     # Risk assessment
-    risk = "LOW"
-    if counts["nan"] > 0 or counts["inf"] > 0:
-        risk = "HIGH"
-    elif (counts["denormal"] / total) > 0.05:  # >5% denormals
-        risk = "MEDIUM"
+    risk = _assess_risk(counts, total)
 
     return f"Found {', '.join(issues)} - precision risk: {risk}"
 
@@ -288,11 +324,7 @@ def analyze(values: List[float]) -> AnalysisReport:
     total = len(values)
 
     # Assess risk
-    risk = "LOW"
-    if counts["nan"] > 0 or counts["inf"] > 0:
-        risk = "HIGH"
-    elif (counts["denormal"] / total) > 0.05:  # >5%
-        risk = "MEDIUM"
+    risk = _assess_risk(counts, total)
 
     # Identify issues
     issues = []
@@ -556,15 +588,7 @@ def compare_dtypes(values: List[float], targets: List[str]) -> DTypeComparison:
         }
 
     # Recommend best dtype (fewest issues)
-    best = min(
-        results.items(),
-        key=lambda x: (
-            x[1]["invalid"],
-            x[1]["overflow"],
-            x[1]["underflow"],
-            {"HIGH": 2, "MEDIUM": 1, "LOW": 0}[x[1]["precision_loss"]],
-        ),
-    )
+    best = min(results.items(), key=_dtype_comparison_key)
 
     return DTypeComparison(
         results=results, recommendation=f"Use {best[0].upper()} for best balance"

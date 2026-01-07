@@ -4,7 +4,7 @@ import math
 from collections.abc import Sequence
 from typing import Optional, cast
 
-from ._validation import validate_non_empty
+from ._validation import validate_equal_length, validate_non_empty
 from .compare import near_zero
 
 __all__ = [
@@ -303,8 +303,7 @@ def div_many(
         >>> div_many([1, 2, 3], [0, 2, 0], default=0.0)
         [0.0, 1.0, 0.0]
     """
-    if len(a_values) != len(b_values):
-        raise ValueError(f"Input sequences must have equal length (got {len(a_values)} and {len(b_values)})")
+    validate_equal_length(a_values, b_values, "a_values", "b_values")
     return [div(a, b, default=default, zero_tol=zero_tol) for a, b in zip(a_values, b_values)]
 
 
@@ -375,6 +374,5 @@ def pow_many(
         >>> pow_many([2, 3, 4], [3, 2, 1])
         [8.0, 9.0, 4.0]
     """
-    if len(bases) != len(exps):
-        raise ValueError(f"Input sequences must have equal length (got {len(bases)} and {len(exps)})")
+    validate_equal_length(bases, exps, "bases", "exps")
     return [pow(b, e, default=default) for b, e in zip(bases, exps)]

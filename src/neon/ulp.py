@@ -4,6 +4,7 @@ import math
 import struct
 from typing import cast
 
+from ._validation import validate_equal_length
 from .exceptions import InvalidValueError
 
 __all__ = [
@@ -256,8 +257,7 @@ def diff_many(a_values: list[float], b_values: list[float]) -> list[int]:
         >>> diff_many([1.0, 2.0], [1.0001, 2.0001])
         [450359962737, 450359962737]
     """
-    if len(a_values) != len(b_values):
-        raise ValueError(f"Input sequences must have equal length (got {len(a_values)} and {len(b_values)})")
+    validate_equal_length(a_values, b_values, "a_values", "b_values")
     return [diff(a, b) for a, b in zip(a_values, b_values)]
 
 
@@ -281,6 +281,5 @@ def within_many(
         >>> within_many([1.0, 2.0], [1.0 + 1e-15, 2.1])
         [True, False]
     """
-    if len(a_values) != len(b_values):
-        raise ValueError(f"Input sequences must have equal length (got {len(a_values)} and {len(b_values)})")
+    validate_equal_length(a_values, b_values, "a_values", "b_values")
     return [within(a, b, max_ulps=max_ulps) for a, b in zip(a_values, b_values)]

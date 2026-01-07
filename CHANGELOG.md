@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-01-07
+
+### Changed - Internal Code Quality Improvements
+
+**Refactored for improved maintainability** - No API changes, all existing code works exactly the same.
+
+- **Eliminated code duplication:**
+  - Extracted `_assess_risk()` helper function in `inspect.py` (eliminates 3 duplicate risk assessment blocks)
+  - Extracted `_dtype_comparison_key()` helper function in `inspect.py` (eliminates complex lambda)
+  - Added `validate_equal_length()` to `_validation.py` (eliminates 4 duplicate length validation blocks)
+
+- **Replaced magic numbers with named constants in `inspect.py`:**
+  - `DENORMAL_THRESHOLD = 2.225073858507201e-308`
+  - `RISK_THRESHOLD_PERCENT = 0.05`
+  - `RISK_LEVEL_SCORE = {"HIGH": 2, "MEDIUM": 1, "LOW": 0}`
+
+- **Improved validation consistency:**
+  - `safe.div_many()` and `safe.pow_many()` now use centralized length validation
+  - `ulp.diff_many()` and `ulp.within_many()` now use centralized length validation
+  - Error messages are now consistent across all batch operations
+
+### Fixed
+
+- **PyPI author metadata:** Author now correctly displays as "Marco Zaccaria Di Fraia, Neon Contributors"
+
+### Technical Details
+
+- **Test coverage:** 95.89% (225 tests passing, same as v1.1.0)
+- **Zero new dependencies:** Still pure stdlib
+- **No API changes:** 100% backward compatible with v1.1.0
+- **Code quality improvement:** Reduced code duplication from ~40 lines to 0
+
 ## [1.1.0] - 2026-01-05
 
 ### Added - Production Float Debugging & Low-Precision Validation

@@ -32,7 +32,7 @@ from .ulp import diff as ulp_diff
 from .ulp import of as ulp_of
 from .ulp import within as ulp_within
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 __all__ = [
     # Modules

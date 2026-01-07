@@ -4,14 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "elemental-neon"
-version = "1.1.0"
+version = "1.1.1"
 description = "Near-equality and tolerance arithmetic for floating-point numbers"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
 authors = [
-    { name = "Marco Zaccaria Di Fraia", email = "marco.z.difraia@gmail.com" },
-    { name = "Neon Contributors" }
+    { name = "Marco Zaccaria Di Fraia, Neon Contributors", email = "marco.z.difraia@gmail.com" }
 ]
 keywords = [
     "floating-point",
