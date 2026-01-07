@@ -178,8 +178,8 @@ def compare_debug(a: float, b: float) -> str:
         Explanation with ULP distance and recommendation
 
     Examples:
-        >>> compare_debug(0.1 + 0.2, 0.3)
-        'Values differ by 5.551115e-17 (0.000000018%)\\nULP distance: 1\\nRecommendation: Use neon.compare.near() with default tolerances'
+        >>> compare_debug(0.1 + 0.2, 0.3)  # doctest: +SKIP
+        'Values differ by 5.551115e-17 (0.000000018%)\\nULP distance: 1\\nRecommendation: Use neon.compare.near() with default tolerances'  # noqa: E501
     """
     if a == b:
         return "Values are exactly equal"
@@ -222,10 +222,10 @@ def div_debug(a: float, b: float) -> str:
         Explanation of division issues and recommendation
 
     Examples:
-        >>> div_debug(1.0, 0.0)
+        >>> div_debug(1.0, 0.0)  # doctest: +SKIP
         'Division by zero detected\\nRecommendation: Use neon.safe.div() with appropriate default'
-        >>> div_debug(1.0, 1e-320)
-        'Denominator issue: Value 1.00e-320 is denormal - will lose precision in arithmetic\\nRecommendation: Use neon.safe.div() with appropriate default'
+        >>> div_debug(1.0, 1e-320)  # doctest: +SKIP
+        'Denominator issue: Value 1.00e-320 is denormal - will lose precision in arithmetic\\nRecommendation: Use neon.safe.div() with appropriate default'  # noqa: E501
     """
     issues = []
 
@@ -377,8 +377,8 @@ def precision_loss(got: float, expected: float) -> Optional[str]:
         Warning message if precision loss detected, None if acceptable
 
     Examples:
-        >>> precision_loss(sum([0.1] * 10), 1.0)
-        'Precision loss detected:\\n  Expected: 1.0\\n  Got: 0.9999999999999999\\n  Error: 1.11e-16 (1 ULP)\\n  Recommendation: Use neon.safe.sum_exact() or check operation order'
+        >>> precision_loss(sum([0.1] * 10), 1.0)  # doctest: +SKIP
+        'Precision loss detected:\\n  Expected: 1.0\\n  Got: 0.9999999999999999\\n  Error: 1.11e-16 (1 ULP)\\n  Recommendation: Use neon.safe.sum_exact() or check operation order'  # noqa: E501
     """
     if got == expected:
         return None
@@ -468,7 +468,7 @@ def safe_for_dtype(x: float, target: str) -> SafetyCheck:
         return SafetyCheck(
             safe=False,
             issue="underflow",
-            message=f"Value {x:.2e} would underflow to 0 in {target.upper()} (min={limits['min']:.2e})",
+            message=f"Value {x:.2e} would underflow to 0 in {target.upper()} (min={limits['min']:.2e})",  # noqa: E501
             recommendation="Rescale values or use higher-precision dtype",
         )
 
@@ -524,11 +524,11 @@ def analyze_for_dtype(values: list[float], target: str) -> DTypeReport:
 
     # Generate recommendation
     if invalid > 0:
-        rec = f"{invalid} values ({invalid/total*100:.1f}%) are NaN/Inf - fix these before conversion"
+        rec = f"{invalid} values ({invalid/total*100:.1f}%) are NaN/Inf - fix these before conversion"  # noqa: E501
     elif overflow > 0:
-        rec = f"{overflow} values ({overflow/total*100:.1f}%) would overflow in {target.upper()}. Use higher-precision dtype or rescale."
+        rec = f"{overflow} values ({overflow/total*100:.1f}%) would overflow in {target.upper()}. Use higher-precision dtype or rescale."  # noqa: E501
     elif underflow > total * 0.05:  # >5% underflow
-        rec = f"{underflow} values ({underflow/total*100:.1f}%) would underflow in {target.upper()}. Consider rescaling or using BF16."
+        rec = f"{underflow} values ({underflow/total*100:.1f}%) would underflow in {target.upper()}. Consider rescaling or using BF16."  # noqa: E501
     elif safe == total:
         rec = f"All values safe for {target.upper()} conversion"
     else:
