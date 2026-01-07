@@ -6,7 +6,7 @@ Focuses on production use cases: post-mortem analysis and FP8/FP16 validation.
 
 import math
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal, Optional, Union, cast
 
 from . import ulp as neon_ulp
 
@@ -51,7 +51,7 @@ def _categorize(x: float) -> Literal["zero", "denormal", "normal", "nan", "inf"]
     return "normal"
 
 
-def _assess_risk(counts: dict, total: int) -> Literal["LOW", "MEDIUM", "HIGH"]:
+def _assess_risk(counts: dict[str, int], total: int) -> Literal["LOW", "MEDIUM", "HIGH"]:
     """Assess precision risk from categorized float counts.
 
     Args:
@@ -68,7 +68,7 @@ def _assess_risk(counts: dict, total: int) -> Literal["LOW", "MEDIUM", "HIGH"]:
     return "LOW"
 
 
-def _dtype_comparison_key(item: tuple) -> tuple:
+def _dtype_comparison_key(item: tuple[str, dict[str, Union[int, str]]]) -> tuple[int, int, int, int]:
     """Key function for sorting dtype comparison results.
 
     Args:
@@ -79,10 +79,10 @@ def _dtype_comparison_key(item: tuple) -> tuple:
     """
     results = item[1]
     return (
-        results["invalid"],
-        results["overflow"],
-        results["underflow"],
-        RISK_LEVEL_SCORE[results["precision_loss"]],
+        cast(int, results["invalid"]),
+        cast(int, results["overflow"]),
+        cast(int, results["underflow"]),
+        RISK_LEVEL_SCORE[cast(str, results["precision_loss"])],
     )
 
 
@@ -548,7 +548,7 @@ def analyze_for_dtype(values: list[float], target: str) -> DTypeReport:
 class DTypeComparison:
     """Comparison of conversion safety across multiple dtypes."""
 
-    results: dict
+    results: dict[str, dict[str, Union[int, str]]]
     recommendation: str
 
 
@@ -567,7 +567,7 @@ def compare_dtypes(values: list[float], targets: list[str]) -> DTypeComparison:
         >>> 'bf16' in comparison.recommendation.lower()
         True
     """
-    results = {}
+    results: dict[str, dict[str, Union[int, str]]] = {}
 
     for dtype in targets:
         report = analyze_for_dtype(values, dtype)
