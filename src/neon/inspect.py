@@ -6,7 +6,7 @@ Focuses on production use cases: post-mortem analysis and FP8/FP16 validation.
 
 import math
 from dataclasses import dataclass
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from . import ulp as neon_ulp
 
@@ -123,7 +123,7 @@ def check(x: float) -> Optional[str]:
     return None
 
 
-def check_many(values: List[float]) -> str:
+def check_many(values: list[float]) -> str:
     """Batch health check - returns summary string.
 
     Args:
@@ -271,8 +271,8 @@ class AnalysisReport:
     nan: int
     inf: int
     precision_risk: Literal["LOW", "MEDIUM", "HIGH"]
-    issues: List[str]
-    recommendations: List[str]
+    issues: list[str]
+    recommendations: list[str]
 
     def __str__(self) -> str:
         lines = [
@@ -302,7 +302,7 @@ class AnalysisReport:
         return "\n".join(lines)
 
 
-def analyze(values: List[float]) -> AnalysisReport:
+def analyze(values: list[float]) -> AnalysisReport:
     """Comprehensive analysis for production debugging.
 
     Args:
@@ -461,7 +461,7 @@ def safe_for_dtype(x: float, target: str) -> SafetyCheck:
             safe=False,
             issue="overflow",
             message=f"Value {x:.2e} would overflow in {target.upper()} (max={limits['max']:.2e})",
-            recommendation=f"Rescale values or use higher-precision dtype",
+            recommendation="Rescale values or use higher-precision dtype",
         )
 
     if abs_x != 0 and abs_x < limits["min"]:
@@ -469,7 +469,7 @@ def safe_for_dtype(x: float, target: str) -> SafetyCheck:
             safe=False,
             issue="underflow",
             message=f"Value {x:.2e} would underflow to 0 in {target.upper()} (min={limits['min']:.2e})",
-            recommendation=f"Rescale values or use higher-precision dtype",
+            recommendation="Rescale values or use higher-precision dtype",
         )
 
     return SafetyCheck(
@@ -489,7 +489,7 @@ class DTypeReport:
     recommendation: str
 
 
-def analyze_for_dtype(values: List[float], target: str) -> DTypeReport:
+def analyze_for_dtype(values: list[float], target: str) -> DTypeReport:
     """Analyze collection for dtype safety.
 
     Args:
@@ -552,7 +552,7 @@ class DTypeComparison:
     recommendation: str
 
 
-def compare_dtypes(values: List[float], targets: List[str]) -> DTypeComparison:
+def compare_dtypes(values: list[float], targets: list[str]) -> DTypeComparison:
     """Compare value safety across multiple dtypes.
 
     Args:

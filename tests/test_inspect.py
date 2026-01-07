@@ -1,6 +1,5 @@
 """Tests for neon.inspect module."""
 
-import math
 
 import pytest
 
